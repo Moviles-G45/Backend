@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from tortoise import exceptions as db_exception
 from tortoise.contrib.fastapi import register_tortoise
 # from fastapi.middleware.cors import CORSMiddleware
-
 from app.core.settings import TORTOISE_ORM, env
+from app.auth.routes import router as auth_router
 
 app = FastAPI(title=env.APP_NAME, version=env.APP_VERSION)
 
@@ -37,3 +37,6 @@ except db_exception.DBConnectionError as e:
 @app.get("/ok", tags=["health"])
 async def health_check():
     return {"status": "ok"}
+
+
+app.include_router(auth_router)
