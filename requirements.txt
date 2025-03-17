@@ -1,0 +1,3 @@
+fastapi[standard]
+pydantic_settings
+tortoise-orm[asyncpg]
