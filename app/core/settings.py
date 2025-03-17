@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     # ACCESS_TOKEN_ALGORITHM: str = "HS256"
     # ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    GOOGLE_MAPS_API_KEY: str = ""
+
     model_config = SettingsConfigDict(case_sensitive=True, env_file=ENV_PATH)
 
 env = None
