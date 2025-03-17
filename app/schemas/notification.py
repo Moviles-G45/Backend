@@ -11,4 +11,4 @@ class NotificationCreate(BaseModel):
     name: str
     content: str
     user_id: int
-    date_created: datetime
+    date: datetime
