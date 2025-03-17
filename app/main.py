@@ -3,7 +3,7 @@ from tortoise import exceptions as db_exception
 from tortoise.contrib.fastapi import register_tortoise
 # from fastapi.middleware.cors import CORSMiddleware
 from app.core.settings import TORTOISE_ORM, env
-from app.auth.routes import router as auth_router
+from app.routers.users import router as auth_router
 from app.routers import atm, auth, budget, category, notification, report, transaction
 
 app = FastAPI(title=env.APP_NAME, version=env.APP_VERSION)
