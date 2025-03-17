@@ -4,6 +4,8 @@ from tortoise.contrib.fastapi import register_tortoise
 # from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.settings import TORTOISE_ORM, env
+from app.routers import atm, auth, budget, category, notification, report, transaction
+
 
 app = FastAPI(title=env.APP_NAME, version=env.APP_VERSION)
 
@@ -19,6 +21,16 @@ app = FastAPI(title=env.APP_NAME, version=env.APP_VERSION)
 #     allow_methods=["*"],
 #     allow_headers=["*"],
 # )
+
+
+app.include_router(auth.router)
+app.include_router(atm.router)
+app.include_router(budget.router)
+app.include_router(category.router)
+app.include_router(transaction.router)
+app.include_router(notification.router)
+app.include_router(report.router)
+
 
 try:
     register_tortoise(
