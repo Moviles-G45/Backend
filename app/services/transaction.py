@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from tortoise.expressions import Q
-from models import Transaction, User, Category
-from schemas.transaction import TransactionCreate, TransactionResponse
+from ..models import Transaction, User, Category
+from ..schemas.transaction import TransactionCreate, TransactionResponse
 from typing import List
 from datetime import date
 
