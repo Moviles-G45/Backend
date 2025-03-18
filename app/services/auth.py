@@ -15,14 +15,20 @@ async def signup(user: UserRequest):
     except Exception as e:
         raise ValueError(f"Signup failed: {str(e)}")
 
-def login(user: UserLogin):
-    """Inicia sesión en Firebase y devuelve un token de acceso."""
-    try:
-        user = auth.get_user_by_email(user.email)
-        custom_token = auth.create_custom_token(user.uid)
-        return {"access_token": custom_token, "token_type": "bearer"}
-    except Exception as e:
-        raise ValueError(f"Login failed: {str(e)}")
+async def login(user):
+    decoded_token = auth.verify_id_token(user.token)
+    uid = decoded_token.get("uid")
+
+    # Optionally, fetch additional user details if needed
+    user_record = auth.get_user(uid)
+
+    # Perform any additional login logic, such as creating a session
+    return {
+        "message": "Login successful",
+        "uid": uid,
+        "email": user_record.email,
+    }
+
 
 def recover_password(email: str):
     """Genera un link de recuperación y lo envía por correo."""

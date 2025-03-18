@@ -20,5 +20,4 @@ class UserCreate(BaseModel):
     phone_number: int
 
 class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
+    token: str
