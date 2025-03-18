@@ -2,16 +2,10 @@ from datetime import datetime, timedelta, UTC
 from app.core.settings import env
 from jose import JWTError, jwt
 
-def create_access_token(
-    data: dict,
-    expires_delta: int = timedelta(minutes=env.ACCESS_TOKEN_EXPIRE_MINUTES)
-):
+def create_access_token(data: dict,expires_delta: int = timedelta(minutes=env.ACCESS_TOKEN_EXPIRE_MINUTES)):
     to_encode = data.copy()
-
     expire = datetime.now(UTC) + expires_delta
-
     to_encode.update({"exp": expire})
-
     encoded_jwt = jwt.encode(
         to_encode, env.ACCESS_TOKEN_SECRET_KEY, algorithm=env.ACCESS_TOKEN_ALGORITHM
     )
@@ -24,3 +18,4 @@ def decode_token(token: str):
         print(e)
         print("Error decoding token")
         return
+
