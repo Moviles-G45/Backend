@@ -6,7 +6,7 @@ from ..services.user import getUserByEmail
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
-def get_current_user(token: str = Depends(oauth2_scheme)):
+async def get_current_user(token: str = Depends(oauth2_scheme)):
     """Verifica el token de Firebase y obtiene el usuario autenticado."""
     try:
         decoded_token = verify_firebase_token(token)
@@ -17,7 +17,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
                 detail="Invalid Firebase token",
             )
         email = decoded_token.get("email")
-        user = getUserByEmail(email)
+        user = await getUserByEmail(email)
         return user # Retorna datos del usuario
     except Exception as e:
         raise HTTPException(
