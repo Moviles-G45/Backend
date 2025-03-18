@@ -2,6 +2,7 @@ from firebase_admin import auth
 from ..helpers.mail import send_email
 from ..schemas.user import UserRequest, UserCreate, UserLogin
 from ..models.user import User
+from ..auth.firebase import verify_firebase_token
 
 async def signup(user: UserRequest):
     """Registra un usuario en Firebase Authentication."""
@@ -16,7 +17,7 @@ async def signup(user: UserRequest):
         raise ValueError(f"Signup failed: {str(e)}")
 
 async def login(user):
-    decoded_token = auth.verify_id_token(user.token)
+    decoded_token = verify_firebase_token(user.token)
     uid = decoded_token.get("uid")
 
     # Optionally, fetch additional user details if needed

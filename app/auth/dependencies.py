@@ -1,7 +1,7 @@
-from firebase_admin import auth
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from ..auth.security import decode_token
+from ..auth.firebase import verify_firebase_token
 from ..services.user import getUserByEmail
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
@@ -9,9 +9,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 def get_current_user(token: str = Depends(oauth2_scheme)):
     """Verifica el token de Firebase y obtiene el usuario autenticado."""
     try:
-        print(token)
-        decoded_token = decode_token(token)
-        print(decoded_token)  # Verifica el token de Firebase
+        decoded_token = verify_firebase_token(token)
         user_id = decoded_token.get("uid")
         if not user_id:
             raise HTTPException(
