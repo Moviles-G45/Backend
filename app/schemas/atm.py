@@ -9,4 +9,4 @@ class ATMPydantic(BaseModel):
     tipo: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
