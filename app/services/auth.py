@@ -7,10 +7,10 @@ async def signup(user: UserRequest):
     """Registra un usuario en Firebase Authentication."""
     try:
         user_fb = auth.create_user(email=user.email, password=user.password)
-        user_db = UserCreate(full_name=user.full_name, user_name=user.user_name,
+        user_db = UserCreate(full_name=user.full_name,
                              email=user.email, date_of_birth=user.date_of_birth,
                              phone_number=user.phone_number)
-        user_obj = await User.create(**user_db.model_dump(exclude_unset=True))
+        await User.create(**user_db.model_dump(exclude_unset=True))
         return {"message": "User created", "user_id": user_fb.uid}
     except Exception as e:
         raise ValueError(f"Signup failed: {str(e)}")
