@@ -1,6 +1,6 @@
 import firebase_admin
 from firebase_admin import auth, credentials
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Security, status
 from fastapi.security import OAuth2PasswordBearer
 
 # Inicializar Firebase Admin SDK si aún no está inicializado
@@ -27,3 +27,11 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Authentication failed: {str(e)}",
         )
+
+def verify_firebase_token(token: str = Security(oauth2_scheme)):
+    """Verifica y decodifica un token de Firebase."""
+    try:
+        decoded_token = auth.verify_id_token(token)
+        return decoded_token
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
