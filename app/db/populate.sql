@@ -54,13 +54,13 @@ INSERT INTO subcategory (id, name, monthly_budget, category_id) VALUES
 (20, 'Fondo de Emergencia', 400.00, 10);
 
 -- Insertar 20 elementos en la tabla "transaction"
-INSERT INTO "transaction" (date, amount, description, user_id, category_id) VALUES
-('2026-1-26', 150.50, 'Compra en supermercado', 1, 3),
-('2026-1-27', 25.00, 'Café con amigos', 1, 4),
+INSERT INTO "transaction" (date, amount, description, category_id, user_id) VALUES
+('2026-1-26', 150.50, 'Compra en supermercado', 3, 1),
+('2026-1-27', 25.00, 'Café con amigos', 4, 1),
 ('2026-1-28', 1200.00, 'Salario mensual', 1, 1),
-('2026-1-29', 50.75, 'Pago de factura de luz', 1, 3),
-('2026-1-30', 300.25, 'Transferencia a cuenta de ahorros', 1, 2),
-('2026-1-31', 75.00, 'Cena en restaurante', 1, 4);
+('2026-1-29', 50.75, 'Pago de factura de luz', 3, 1),
+('2026-1-30', 300.25, 'Transferencia a cuenta de ahorros', 2, 1),
+('2026-1-31', 75.00, 'Cena en restaurante', 4, 1);
 
 -- Insertar 20 elementos en la tabla notification
 INSERT INTO notification (id, name, content, date, user_id) VALUES
