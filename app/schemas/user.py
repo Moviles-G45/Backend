@@ -6,7 +6,6 @@ from ..models.user import User
 UserPydantic = pydantic_model_creator(User,name="User")
 class UserRequest(BaseModel):
     full_name: str
-    user_name: str
     email: EmailStr
     password: str
     date_of_birth: datetime
@@ -14,7 +13,6 @@ class UserRequest(BaseModel):
 
 class UserCreate(BaseModel):
     full_name: str
-    user_name: str
     email: EmailStr
     date_of_birth: datetime
     phone_number: int
