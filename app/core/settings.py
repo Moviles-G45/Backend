@@ -22,6 +22,11 @@ class Settings(BaseSettings):
 
     GOOGLE_MAPS_API_KEY: str = ""
 
+    SMTP_SERVER: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_EMAIL: str = "tucorreo@gmail.com"  
+    SMTP_PASSWORD: str = "tupassword" 
+
     model_config = SettingsConfigDict(case_sensitive=True, env_file=ENV_PATH)
 
 env = None

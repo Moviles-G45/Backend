@@ -1,35 +1,38 @@
-from fastapi import APIRouter
-from ..services.auth import (
-    login_user,
-    signup_user,
-    recover_password,
-    reset_password,
-    logout_user
-)
+from fastapi import APIRouter, HTTPException, Depends
+from ..services.auth import signup, login, recover_password
+from ..schemas.user import UserRequest
+from ..auth.dependencies import get_current_user
 
-router = APIRouter(prefix="/auth", tags=["Auth"])
 
-@router.post("/login")
-async def login():
-    """Handle user login."""
-    return await login_user()
+router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/signup")
-async def signup():
-    """Handle user signup."""
-    return await signup_user()
+async def signup_route(user: UserRequest):
+    """Ruta para registrar un usuario."""
+    try:
+        return await signup(user)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/login")
+def login_route(email: str, password: str):
+    """Ruta para iniciar sesión."""
+    try:
+        return login(email, password)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/recover")
-async def recover():
-    """Trigger a password reset email or link."""
-    return await recover_password()
+def recover_password_route(email: str):
+    """Ruta para recuperar contraseña."""
+    try:
+        return recover_password(email)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+@router.get("/me")
+def getCurrentUser(user = Depends(get_current_user)):
 
-@router.post("/reset")
-async def reset():
-    """Reset the password using the token."""
-    return await reset_password()
+    return user
 
-@router.post("/logout")
-async def logout():
-    """Logout the user (invalidate token)."""
-    return await logout_user()
+

@@ -1,11 +1,16 @@
 from fastapi import FastAPI
 from tortoise import exceptions as db_exception
 from tortoise.contrib.fastapi import register_tortoise
-# from fastapi.middleware.cors import CORSMiddleware
 from app.core.settings import TORTOISE_ORM, env
-from app.routers import atm, budget, category, notification, report, transaction, users
+from app.routers import atm, budget, category, notification, report, transaction, auth
+import firebase_admin
+from firebase_admin import credentials
+
 
 app = FastAPI(title=env.APP_NAME, version=env.APP_VERSION)
+
+cred = credentials.Certificate("firebase_config.json")  # Archivo de credenciales de Firebase
+firebase_admin.initialize_app(cred)
 
 
 # origins = [
@@ -28,7 +33,7 @@ app.include_router(category.router)
 app.include_router(transaction.router)
 app.include_router(notification.router)
 app.include_router(report.router)
-app.include_router(users.router)
+app.include_router(auth.router)
 
 
 try:
