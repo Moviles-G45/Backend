@@ -6,6 +6,8 @@ class Notification(Model):
     name = fields.CharField(max_length=100)
     content = fields.TextField()
     date = fields.DateField()
+ 
+
 
     user = fields.ForeignKeyField('models.User', related_name='notifications')
 
