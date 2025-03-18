@@ -1,5 +1,5 @@
 -- Insertar 20 elementos en la tabla "user"
-INSERT INTO "user" (id, full_name, user_name, email, password, date_of_birth, phone_number) VALUES
+INSERT INTO "user" (id, full_name, user_name, mail, password, date_of_birth, phone_number) VALUES
 (1, 'Usuario Uno', 'usuario1', 'usuario1@example.com', 'pass1', '1990-01-01', '555-0001'),
 (2, 'Usuario Dos', 'usuario2', 'usuario2@example.com', 'pass2', '1990-02-02', '555-0002'),
 (3, 'Usuario Tres', 'usuario3', 'usuario3@example.com', 'pass3', '1990-03-03', '555-0003'),
@@ -23,26 +23,11 @@ INSERT INTO "user" (id, full_name, user_name, email, password, date_of_birth, ph
 
 -- Insertar 20 elementos en la tabla category
 INSERT INTO category (id, name, monthly_budget) VALUES
-(1, 'Alimentación', 500.00),
-(2, 'Transporte', 300.00),
-(3, 'Vivienda', 800.00),
-(4, 'Salud', 200.00),
-(5, 'Educación', 400.00),
-(6, 'Entretenimiento', 250.00),
-(7, 'Ropa', 150.00),
-(8, 'Tecnología', 350.00),
-(9, 'Viajes', 600.00),
-(10, 'Ahorros', 1000.00),
-(11, 'Regalos', 100.00),
-(12, 'Impuestos', 450.00),
-(13, 'Servicios', 300.00),
-(14, 'Comunicaciones', 200.00),
-(15, 'Mascotas', 150.00),
-(16, 'Belleza', 180.00),
-(17, 'Hogar', 550.00),
-(18, 'Jardinería', 120.00),
-(19, 'Deportes', 220.00),
-(20, 'Misceláneos', 130.00);
+(1, 'earning', 500.00),
+(2, 'savings', 300.00),
+(3, 'needs', 800.00),
+(4, 'wants', 200.00),
+
 
 -- Insertar 20 elementos en la tabla subcategory
 -- Se asigna cada subcategoría a un category_id válido (en este ejemplo, se usa el mismo id para simplificar)
@@ -69,27 +54,13 @@ INSERT INTO subcategory (id, name, monthly_budget, category_id) VALUES
 (20, 'Fondo de Emergencia', 400.00, 10);
 
 -- Insertar 20 elementos en la tabla "transaction"
-INSERT INTO "transaction" (id, date, amount, description, category_id, user_id) VALUES
-(1, '2025-03-01', 50.00, 'Compra en supermercado', 1, 1),
-(2, '2025-03-02', 75.00, 'Cena en restaurante', 1, 2),
-(3, '2025-03-03', 20.00, 'Billete de autobús', 2, 3),
-(4, '2025-03-04', 35.00, 'Viaje en taxi', 2, 4),
-(5, '2025-03-05', 500.00, 'Pago de hipoteca', 3, 5),
-(6, '2025-03-06', 300.00, 'Pago de alquiler', 3, 6),
-(7, '2025-03-07', 80.00, 'Consulta médica', 4, 7),
-(8, '2025-03-08', 40.00, 'Compra de medicamentos', 4, 8),
-(9, '2025-03-09', 250.00, 'Pago de colegiatura', 5, 9),
-(10, '2025-03-10', 150.00, 'Compra de libros', 5, 10),
-(11, '2025-03-11', 60.00, 'Entrada al cine', 6, 11),
-(12, '2025-03-12', 90.00, 'Gasto en concierto', 6, 12),
-(13, '2025-03-13', 45.00, 'Compra de zapatos', 7, 13),
-(14, '2025-03-14', 55.00, 'Compra de ropa formal', 7, 14),
-(15, '2025-03-15', 220.00, 'Compra de gadget', 8, 15),
-(16, '2025-03-16', 180.00, 'Compra de accesorios', 8, 16),
-(17, '2025-03-17', 350.00, 'Reserva de vuelo', 9, 17),
-(18, '2025-03-18', 250.00, 'Reserva de hotel', 9, 18),
-(19, '2025-03-19', 700.00, 'Inversión en ahorros', 10, 19),
-(20, '2025-03-20', 400.00, 'Aporte a fondo de emergencia', 10, 20);
+INSERT INTO "transaction" (date, amount, description, user_id, category_id) VALUES
+('2026-1-26', 150.50, 'Compra en supermercado', 1, 3),
+('2026-1-27', 25.00, 'Café con amigos', 1, 4),
+('2026-1-28', 1200.00, 'Salario mensual', 1, 1),
+('2026-1-29', 50.75, 'Pago de factura de luz', 1, 3),
+('2026-1-30', 300.25, 'Transferencia a cuenta de ahorros', 1, 2),
+('2026-1-31', 75.00, 'Cena en restaurante', 1, 4);
 
 -- Insertar 20 elementos en la tabla notification
 INSERT INTO notification (id, name, content, date, user_id) VALUES
