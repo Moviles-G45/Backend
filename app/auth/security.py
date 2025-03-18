@@ -1,21 +1,16 @@
-from datetime import datetime, timedelta, UTC
-from app.core.settings import env
-from jose import JWTError, jwt
+import firebase_admin
+from firebase_admin import auth, credentials
 
-def create_access_token(data: dict,expires_delta: int = timedelta(minutes=env.ACCESS_TOKEN_EXPIRE_MINUTES)):
-    to_encode = data.copy()
-    expire = datetime.now(UTC) + expires_delta
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(
-        to_encode, env.ACCESS_TOKEN_SECRET_KEY, algorithm=env.ACCESS_TOKEN_ALGORITHM
-    )
-    return encoded_jwt
+# Inicializar Firebase Admin SDK si aún no está inicializado
+if not firebase_admin._apps:
+    cred = credentials.Certificate("firebase_config.json")  # Archivo JSON de credenciales de Firebase
+    firebase_admin.initialize_app(cred)
 
 def decode_token(token: str):
+    """Decodifica y verifica el token de Firebase."""
     try:
-        return jwt.decode(token, env.ACCESS_TOKEN_SECRET_KEY, env.ACCESS_TOKEN_ALGORITHM).get("sub")
-    except JWTError as e:
-        print(e)
-        print("Error decoding token")
-        return
-
+        decoded_token = auth.verify_id_token(token)  # Verifica el ID token de Firebase
+        return decoded_token  # Retorna toda la información del usuario
+    except Exception as e:
+        print(f"Error decoding token: {e}")
+        return None
