@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from ..services.auth import signup, login, recover_password
-from ..schemas.user import UserRequest
+from ..schemas.user import UserRequest, UserLogin
 from ..auth.dependencies import get_current_user
 
 
@@ -15,10 +15,10 @@ async def signup_route(user: UserRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/login")
-def login_route(email: str, password: str):
+def login_route(user: UserLogin):
     """Ruta para iniciar sesión."""
     try:
-        return login(email, password)
+        return login(user)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

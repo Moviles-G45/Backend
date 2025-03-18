@@ -18,3 +18,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     date_of_birth: datetime
     phone_number: int
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
