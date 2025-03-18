@@ -8,10 +8,11 @@ router = APIRouter(prefix="/reports", tags=["Reports"])
 @router.get("/monthly")
 async def monthly_report(
     month: Optional[str] = Query(None), 
-    year: Optional[str] = Query(None)
+    year: Optional[str] = Query(None), 
+    user_id: int = Query(...)
 ):
     """
-    Return a monthly financial report for the authenticated user, including 
-    spending trends, budget performance, and category breakdown.
+    Retorna un reporte financiero mensual basado en user_id, 
+    incluyendo tendencias de gasto, desempeño del presupuesto y desglose por categoría.
     """
-    return await get_monthly_report(month, year)
+    return await get_monthly_report(month, year, user_id)
