@@ -1,6 +1,6 @@
 from firebase_admin import auth
 from ..helpers.mail import send_email
-from ..schemas.user import UserRequest, UserCreate
+from ..schemas.user import UserRequest, UserCreate, UserLogin
 from ..models.user import User
 
 async def signup(user: UserRequest):
@@ -15,10 +15,10 @@ async def signup(user: UserRequest):
     except Exception as e:
         raise ValueError(f"Signup failed: {str(e)}")
 
-def login(email: str, password: str):
+def login(user: UserLogin):
     """Inicia sesión en Firebase y devuelve un token de acceso."""
     try:
-        user = auth.get_user_by_email(email)
+        user = auth.get_user_by_email(user.email)
         custom_token = auth.create_custom_token(user.uid)
         return {"access_token": custom_token, "token_type": "bearer"}
     except Exception as e:
