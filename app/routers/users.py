@@ -49,7 +49,5 @@ def logout():
     """Firebase no maneja sesiones backend, el frontend debe eliminar el token."""
     return {"message": "User logged out (Client-side token should be removed)"}
 
-@router.get("/me")
-def get_current_user(token: str = Depends(verify_firebase_token)):
-    """Obtiene la información del usuario autenticado."""
-    return {"email": token["email"], "user_id": token["user_id"]}
+
+
