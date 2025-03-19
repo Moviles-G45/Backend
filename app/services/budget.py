@@ -1,131 +1,170 @@
-
+from datetime import datetime
 from tortoise.transactions import in_transaction
-from app.models.category import Category
-from app.models.transaction import Transaction
-from typing import List, Dict
+from ..models.user import User
+from ..models.budget import Budget
+from ..models.budget_category_type import BudgetCategoryType
+from ..models.category_type import CategoryType
+from ..schemas.budget import BudgetCreate
+from ..services.transaction import get_transactions
 
-from datetime import date, timedelta
-
-async def get_transactions_in_month(user_id: int, month: int, year: int):
-    """ Obtiene las transacciones de un usuario en un mes específico. """
-    
-    # Fecha de inicio: Primer día del mes
-    start_date = date(year, month, 1)
-    
-    # Fecha de fin: Primer día del siguiente mes
-    if month == 12:
-        end_date = date(year + 1, 1, 1)
-    else:
-        end_date = date(year, month + 1, 1)
-
-    print(f"Filtrando transacciones desde {start_date} hasta {end_date}")
-
-    transactions = await Transaction.filter(
-        user_id=user_id,
-        date__range=(start_date, end_date)  # Filtrar entre el 1 del mes y el 1 del mes siguiente
-    ).values("category_id", "amount", "date")
-
-    return transactions
-
-
-
-CATEGORIES = ["earnings", "savings", "needs", "wants"]
-
+import calendar
 
 
 async def get_budget(user_id: int, month: int, year: int):
-    # Obtener categorías del usuario en el mes/año especificado
-    categories = await Category.filter(user_id=user_id, month=month, year=year).values(
-        "id", "name", "amount", "percentage", "month", "year", "user_id"
-    )
+    # Se obtiene el presupuesto del usuario para el mes y año indicados
+    budget = await Budget.get_or_none(user_id=user_id, month=month, year=year)
+    if not budget:
+        # Si no existe presupuesto, retornamos None y el router decidirá la acción correspondiente
+        return None
 
-    if not categories:
-        return {"error": "No hay presupuesto registrado para este usuario en el mes y año indicados"}
+    # Pre-cargamos la relación con BudgetCategoryType y dentro de ella la relación con CategoryType
+    await budget.fetch_related("category_types__category_type")
 
-    earnings = next((c["amount"] for c in categories if c["name"] == "earnings"), None)
-    if earnings is None:
-        return {"error": "No hay earnings definidos para este usuario."}
-
-    # Asegurar que earnings sea float
-    earnings = float(earnings) if earnings is not None else 0.0
-
-    # Construir la respuesta con los montos de cada categoría
     result = []
-    for c in categories:
-        if c["name"] == "earnings":
-            result.append({"category": "earnings", "amount": earnings})
-        else:
-            # Asegurar que percentage sea float
-            percentage = float(c["percentage"]) if c["percentage"] is not None else 0.0
-            result.append({"category": c["name"], "amount": earnings * (percentage / 100)})
-
+    # Iteramos sobre cada BudgetCategoryType asociado al presupuesto
+    for budget_category in budget.category_types:
+        # Excluimos el CategoryType con id igual a 1
+        if budget_category.category_type.id != 1:
+            result.append({
+                "category_type": budget_category.category_type.name,
+                "percentage": budget_category.percentage
+            })
     return result
 
 
-async def set_budget(user_id: int, month: int, year: int, earnings: float, savings_percentage: float, needs_percentage: float, wants_percentage: float):
-    """ Crea el presupuesto de un usuario para un mes y año específico. """
-    
-    # Validar que los porcentajes sumen 100%
-    if savings_percentage + needs_percentage + wants_percentage != 100:
-        raise ValueError("Los porcentajes de savings, needs y wants deben sumar 100%.")
+async def set_budget(user: User, budget_create: BudgetCreate) -> dict | None:
+    """
+    Crea un presupuesto para el usuario dado en el mes y año especificados.
 
+    Parámetros:
+      - user: objeto User.
+      - budget_create: objeto BudgetCreate, que contiene:
+            - month: mes del presupuesto.
+            - year: año del presupuesto.
+            - budget_category_types: lista de asignaciones, cada una con:
+                  { "category_type": <id del CategoryType>, "percentage": <porcentaje asignado> }
+        La suma de todos los porcentajes debe ser 100 y no se permite incluir el CategoryType con id 1 (earnings).
+
+    Retorna un diccionario con la información del presupuesto creado y las categorías,
+    o None en caso de error (por ejemplo, si la suma de porcentajes no es 100, ya existe
+    un presupuesto para ese mes/año, o se incluye el CategoryType de earnings, o no se encuentra algún CategoryType).
+    """
+    # Validar que la suma de porcentajes sea 100
+    total_percentage = sum(item.percentage for item in budget_create.budget_category_types)
+    if total_percentage != 100:
+        return None
+
+    # Verificar que no exista ya un presupuesto para este usuario, mes y año
+    existing_budget = await Budget.get_or_none(user_id=user.id, month=budget_create.month, year=budget_create.year)
+    if existing_budget:
+        return None
+
+    # Usar una transacción para garantizar la atomicidad
     async with in_transaction():
-        categories = [
-            Category(user_id=user_id, name="earnings", amount=earnings, month=month, year=year),
-            Category(user_id=user_id, name="savings", percentage=savings_percentage, month=month, year=year),
-            Category(user_id=user_id, name="needs", percentage=needs_percentage, month=month, year=year),
-            Category(user_id=user_id, name="wants", percentage=wants_percentage, month=month, year=year),
-        ]
-        await Category.bulk_create(categories)
+        # Crear el presupuesto
+        budget = await Budget.create(user_id=user.id, month=budget_create.month, year=budget_create.year)
+        budget_categories_summary = []
 
-    return {"message": "Presupuesto creado correctamente"}
+        # Crear la relación BudgetCategoryType para cada categoría
+        for item in budget_create.budget_category_types:
+            category_type_id = item.category_type
+            percentage = item.percentage
 
-async def get_exceedances(user_id: int, month: int, year: int) -> Dict[str, float]:
-    """ Obtiene las categorías donde el usuario se ha excedido en su presupuesto. """
+            # Verificar que el CategoryType exista
+            category_type = await CategoryType.get_or_none(id=category_type_id)
+            if not category_type:
+                return None
+
+            # Verificar que no se esté intentando asignar el CategoryType de earnings (id == 1)
+            if category_type.id == 1:
+                return None
+
+            # Crear la relación entre el presupuesto y el CategoryType
+            await BudgetCategoryType.create(
+                budget=budget,
+                category_type=category_type,
+                percentage=percentage
+            )
+
+            budget_categories_summary.append({
+                "category": category_type.name,
+                "percentage": percentage
+            })
+
+    # Retornar un resumen del presupuesto creado
+    return {
+        "budget_id": budget.id,
+        "month": budget.month,
+        "year": budget.year,
+        "category_types": budget_categories_summary
+    }
+
+
+
+async def get_exceedances(user: User, month: int, year: int):
+    """
+    Calcula las excedencias de gasto para cada CategoryType (excepto ingresos) en el presupuesto del mes y año indicados.
     
-    # Obtener categorías del usuario en el mes/año especificado
-    categories = await Category.filter(user_id=user_id, month=month, year=year).values(
-        "id", "name", "amount", "percentage", "month", "year", "user_id"
+    Retorna una lista de diccionarios con el formato:
+      [
+        {
+          "category_type": <nombre del CategoryType>,
+          "max": <valor máximo permitido>,
+          "actual": <valor total de transacciones>
+        },
+        ...
+      ]
+      
+    Se hace lo siguiente:
+      - Se determina el rango de fechas para el mes.
+      - Se obtienen las transacciones de ingresos (CategoryType id = 1) para calcular el total de ingresos.
+      - Se obtiene el presupuesto (Budget) del usuario para el mes y año indicados, junto con sus asignaciones (BudgetCategoryType).
+      - Para cada asignación se usa `get_transactions` para obtener las transacciones de ese CategoryType en el mes y se suma el monto.
+      - Se calcula el máximo permitido como: total_income * (percentage / 100)
+    """
+    # Calcular fechas de inicio y fin del mes
+    start_date_obj = datetime(year, month, 1)
+    last_day = calendar.monthrange(year, month)[1]
+    end_date_obj = datetime(year, month, last_day, 23, 59, 59)
+
+    # Obtener los ingresos del mes (CategoryType id = 1)
+    earnings_transactions = await get_transactions(
+        user=user,
+        start_date=start_date_obj.isoformat(),
+        end_date=end_date_obj.isoformat(),
+        category_type=1,  # Ingresos
+        limit=10000,
+        offset=0
     )
+    total_income = sum(tx.amount for tx in earnings_transactions)
 
-    if not categories:
-        return {"error": "No hay presupuesto registrado para este usuario en el mes y año indicados"}
+    # Obtener el presupuesto del usuario para el mes y año indicados
+    budget = await Budget.get_or_none(user_id=user.id, month=month, year=year)
+    if not budget:
+        return []  # O bien, retornar None según la lógica de la aplicación
 
-    earnings = next((c["amount"] for c in categories if c["name"] == "earnings"), None)
-    if earnings is None:
-        return {"error": "No hay earnings definidos para este usuario."}
+    # Pre-cargar la relación BudgetCategoryType y dentro de ella, CategoryType
+    await budget.fetch_related("category_types__category_type")
 
-    # Asegurar que earnings sea float
-    earnings = float(earnings) if earnings is not None else 0.0
-    budget_limits = {}
-    for c in categories:
-        if c["name"] != "earnings":
-            percentage = (c["percentage"]) if c["percentage"] is not None else 0.0
-            a = c["name"]
-            b = earnings * percentage / 100
-            budget_limits[a] = b
-
-    category_ids = [c["id"] for c in categories if c["name"] in ["savings", "needs", "wants"]]
-
-    if not category_ids:
-        return {"error": "No hay categorías de savings, needs o wants definidas para este usuario."}
-    # Obtener gastos del usuario en el mes, revisando el ID de la categoría
-    transactions = await get_transactions_in_month(user_id, month, year)
-    if not transactions:
-        return {"error": "No hay transacciones registradas para este usuario en el mes y año indicados"}
-
-     # Sumar gastos por categoría
-    expenses = {}
-    for t in transactions:
-        category_id = t["category_id"]
-        amount = float(t["amount"])
-
-        # Obtener el nombre de la categoría correspondiente
-        category_name = next((c["name"] for c in categories if c["id"] == category_id), None)
-        if category_name:
-            expenses[category_name] = expenses.get(category_name, 0) + amount
-
-    # Comparar gastos con los límites
-    exceedances = {cat: spent for cat, spent in expenses.items() if cat in budget_limits and spent > budget_limits[cat]}
+    exceedances = []
+    for bc in budget.category_types:
+        # Calcular el valor máximo permitido para este CategoryType
+        allowed = float(total_income) * (bc.percentage / 100)
+        # Usar get_transactions para obtener todas las transacciones de este CategoryType en el mes
+        transactions = await get_transactions(
+            user=user,
+            start_date=start_date_obj.isoformat(),
+            end_date=end_date_obj.isoformat(),
+            category_type=bc.category_type.id,
+            limit=10000,
+            offset=0
+        )
+        # Sumar los montos de las transacciones obtenidas
+        actual = sum(tx.amount for tx in transactions)
+        exceedances.append({
+            "category_type": bc.category_type.name,
+            "max": allowed,
+            "actual": actual
+        })
 
     return exceedances

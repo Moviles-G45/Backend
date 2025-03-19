@@ -7,13 +7,15 @@ from ..models.transaction import Transaction
 TransactionPydantic = pydantic_model_creator(Transaction, name="Transaction")
 TransactionPydanticIn = pydantic_model_creator(Transaction, name="TransactionIn", exclude_readonly=True)
 
-class TransactionCreate(BaseModel):
+class TransactionRequest(BaseModel):
     date: date
     amount: float
     description: Optional[str] = None
     category_id: int
-    user_id: int  
-    
+
+class TransactionCreate(TransactionRequest):
+    user_id: int
+
 class TransactionResponse(BaseModel):
     id: int
     date: date

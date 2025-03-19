@@ -16,7 +16,7 @@ async def signup(user: UserRequest):
     except Exception as e:
         raise ValueError(f"Signup failed: {str(e)}")
 
-async def login(user):
+async def login(user: UserLogin):
     decoded_token = verify_firebase_token(user.token)
     uid = decoded_token.get("uid")
 

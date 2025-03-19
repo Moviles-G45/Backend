@@ -1,19 +1,12 @@
 from pydantic import BaseModel
-from typing import Optional
+from tortoise.contrib.pydantic import pydantic_model_creator
+from ..models.category import Category
 
-class CategoryBase(BaseModel):
-    name: str  # earnings, savings, needs, wants
-    month: int
-    year: int
 
-class CategoryCreate(CategoryBase):
-    amount: Optional[float] = None  # Solo para earnings
-    percentage: Optional[float] = None  # Solo para savings, needs, wants
+CategoryPydantic = pydantic_model_creator(Category, name="Category")
 
-class CategoryPydantic(CategoryBase):
-    id: int
-    amount: Optional[float] = None
-    percentage: Optional[float] = None
 
-    class Config:
-        from_attributes = True  # ✅ Corrige el error de 'orm_mode'
+class CategoryCreate(BaseModel):
+    name: str
+    description: str
+    category_type_id: int

@@ -1,21 +1,12 @@
 import calendar
 from datetime import date
-from typing import Optional
-from fastapi import Depends, HTTPException
+from fastapi import HTTPException
 from tortoise.expressions import Q
 
-from app.models.category import Category
-from ..auth.dependencies import get_current_user
+from ..models.category import Category
+from ..models.transaction import Transaction
 
 
-from app.models.transaction import Transaction
-from ..auth.dependencies import get_current_user
-
-
-import calendar
-from datetime import date
-from fastapi import Depends, HTTPException
-from tortoise.expressions import Q
 
 async def get_monthly_report(month: str, year: str, user_id: int):
     year, month = int(year), int(month)
@@ -41,7 +32,7 @@ async def get_monthly_report(month: str, year: str, user_id: int):
 
     for t in transactions:
         category_name = category_map.get(t.category_id, "Desconocido")
-        
+
         if category_name in category_summary:
             category_summary[category_name] += t.amount
         else:

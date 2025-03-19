@@ -7,7 +7,7 @@ router = APIRouter(prefix="/categories", tags=["Categories"])
 
 @router.get("", response_model=list[CategoryPydantic])
 async def list_categories():
-    """Get all categories for the current user."""
+    """Get all categories"""
     return await get_categories()
 
 @router.post("", response_model=CategoryPydantic)
