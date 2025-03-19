@@ -84,3 +84,57 @@ INSERT INTO notification (id, name, content, date, user_id) VALUES
 (18, 'Alerta', 'Actividad inusual en tu cuenta', '2025-03-22 09:00:00', 18),
 (19, 'Recordatorio', 'Revisión trimestral de gastos', '2025-03-23 10:00:00', 19),
 (20, 'Aviso', 'Nuevo aviso de actualización', '2025-03-24 11:00:00', 20);
+--Para el home
+
+INSERT INTO "user" (full_name, email, date_of_birth, phone_number) VALUES
+('John Doe', 'johndoe@example.com', '1990-05-20', '1234567890'),
+('Jane Smith', 'janesmith@example.com', '1992-10-15', '0987654321');
+
+
+
+INSERT INTO "categorytype" (name, description) VALUES
+('earnings', 'Income sources such as salary or freelancing'),
+('savings', 'Money saved for future use'),
+('needs', 'Necessary expenses like rent, bills, food'),
+('wants', 'Non-essential expenses like entertainment, shopping');
+
+
+INSERT INTO "category" (name, description, category_type_id) VALUES
+('Salary', 'Monthly salary income', 1),
+('Freelancing', 'Freelancing projects earnings', 1),
+('Emergency Fund', 'Savings for emergencies', 2),
+('Rent', 'Monthly rent payments', 3),
+('Groceries', 'Monthly food expenses', 3),
+('Entertainment', 'Movies, concerts, games', 4),
+('Shopping', 'Buying clothes, gadgets, etc.', 4);
+
+
+INSERT INTO "budget" (month, year, user_id) VALUES
+(4, 2024, 1),
+(4, 2024, 2);
+
+INSERT INTO "budgetcategorytype" (percentage, category_type_id, budget_id) VALUES
+(50, 1, 1),  -- 50% de los ingresos
+(20, 2, 1),  -- 20% para ahorros
+(25, 3, 1),  -- 25% para necesidades
+(5, 4, 1),   -- 5% para deseos
+
+(60, 1, 2),  -- 60% de los ingresos
+(15, 2, 2),  -- 15% para ahorros
+(20, 3, 2),  -- 20% para necesidades
+(5, 4, 2);   -- 5% para deseos
+
+INSERT INTO "transaction" (date, amount, description, category_id, user_id) VALUES
+-- Transacciones de John Doe
+('2024-04-01', 4000.00, 'April Salary', 1, 1),
+('2024-04-05', -500.00, 'Paid Rent', 4, 1),
+('2024-04-10', -150.00, 'Groceries Shopping', 5, 1),
+('2024-04-15', -100.00, 'Movie Night', 6, 1),
+('2024-04-20', -200.00, 'Bought New Shoes', 7, 1),
+
+-- Transacciones de Jane Smith
+('2024-04-02', 5000.00, 'April Salary', 1, 2),
+('2024-04-06', -700.00, 'Apartment Rent', 4, 2),
+('2024-04-12', -180.00, 'Grocery Shopping', 5, 2),
+('2024-04-17', -120.00, 'Concert Ticket', 6, 2),
+('2024-04-22', -250.00, 'New Clothes', 7, 2);
