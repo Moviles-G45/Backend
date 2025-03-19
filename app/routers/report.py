@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query
 from typing import Optional
-from ..services.report import get_monthly_report
+from ..services.report import send_monthly_report_pdf
 from fastapi import APIRouter, Query, Depends
 from ..auth.dependencies import get_current_user
 router = APIRouter(prefix="/reports", tags=["Reports"])
@@ -15,4 +15,4 @@ async def monthly_report(
     Retorna un reporte financiero mensual basado en user_id, 
     incluyendo tendencias de gasto, desempeño del presupuesto y desglose por categoría.
     """
-    return await get_monthly_report(month, year, user.id)
+    return await send_monthly_report_pdf(month, year, user.id, user.email)

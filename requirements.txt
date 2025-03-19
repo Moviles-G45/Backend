@@ -5,3 +5,4 @@ firebase-admin
 pyrebase4
 python-jose[cryptography]
 setuptools
+reportlab

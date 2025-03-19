@@ -35,9 +35,13 @@ def recover_password(email: str):
     """Genera un link de recuperación y lo envía por correo."""
     try:
         reset_link = auth.generate_password_reset_link(email)
-        send_email(email, reset_link)
+        subject = "Restablecimiento de contraseña"
+        body = (
+            f"Hola,\n\nHaz clic en el siguiente enlace para restablecer tu contraseña:\n\n"
+            f"{reset_link}\n\nSi no solicitaste este cambio, ignora este mensaje."
+        )
+        send_email(email, subject, body)
         return {"message": f"Password reset email sent to {email}"}
     except Exception as e:
         raise ValueError(f"Failed to send password reset email: {str(e)}")
-    
 
