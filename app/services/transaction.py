@@ -78,3 +78,53 @@ async def get_total_spent(user: User):
     total_spent = result[0]['total'] if result and result[0]['total'] else 0
 
     return { "user": user.email, "total_spent": total_spent }
+
+
+async def get_monthly_balance(user: User, year: int, month: int):
+    """
+    Calcula el balance general de un mes sumando earnings y restando expenses.
+    """
+
+    # Definir el rango de fechas
+    try:
+        start_date = datetime(year, month, 1)
+        end_date = datetime(year, month + 1, 1) if month < 12 else datetime(year + 1, 1, 1)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Fecha inválida")
+
+    # Obtener el ID de la categoría 'earning'
+    earning_category = await CategoryType.get_or_none(name="earning")
+
+    if not earning_category:
+        raise HTTPException(status_code=404, detail="CategoryType 'earning' not found")
+
+    # Sumar los ingresos (earnings)
+    earnings = await Transaction.filter(
+        user_id=user.id,
+        date__gte=start_date,
+        date__lt=end_date,
+        category__category_type=earning_category
+    ).annotate(total=Sum('amount')).values('total')
+
+    total_earnings = earnings[0]['total'] if earnings and earnings[0]['total'] else 0
+
+    # Sumar los gastos (expenses)
+    expenses = await Transaction.filter(
+        user_id=user.id,
+        date__gte=start_date,
+        date__lt=end_date
+    ).exclude(category__category_type=earning_category).annotate(total=Sum('amount')).values('total')
+
+    total_expenses = expenses[0]['total'] if expenses and expenses[0]['total'] else 0
+
+    # Calcular balance
+    balance = total_earnings - total_expenses
+
+    return {
+        "user": user.email,
+        "year": year,
+        "month": month,
+        "total_earnings": total_earnings,
+        "total_expenses": total_expenses,
+        "balance": balance
+    }
