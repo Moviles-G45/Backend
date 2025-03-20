@@ -5,6 +5,7 @@ from app.core.settings import TORTOISE_ORM, env
 from app.routers import atm, budget, category, notification, report, transaction, auth
 import firebase_admin
 from firebase_admin import credentials
+from fastapi.middleware.cors import CORSMiddleware
 
 
 app = FastAPI(title=env.APP_NAME, version=env.APP_VERSION)
@@ -17,13 +18,13 @@ firebase_admin.initialize_app(cred)
 
 # ]
 
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=origins,
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 
