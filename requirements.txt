@@ -6,3 +6,5 @@ pyrebase4
 python-jose[cryptography]
 setuptools
 reportlab
+psycopg2-binary  
+cloud-sql-python-connector[pg8000]  # Opcional para conexión segura en GCP
