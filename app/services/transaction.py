@@ -117,8 +117,8 @@ async def get_monthly_balance(user: User):
         user_id=user.id,
         date__gte=start_date,
         date__lt=end_date,
-        category__category_type=earning_category
-    ).annotate(total=Sum('amount')).values('total')
+        category__category_type_id=1
+    ).annotate(total=Sum('amount')).group_by('user_id').first().values('total')
 
     total_earnings = float(earnings[0]['total']) if earnings and earnings[0]['total'] else 0.0  # 🔹 Convertir a float
 
@@ -127,7 +127,7 @@ async def get_monthly_balance(user: User):
         user_id=user.id,
         date__gte=start_date,
         date__lt=end_date
-    ).exclude(category__category_type=earning_category).annotate(total=Sum('amount')).values('total')
+    ).exclude(category__category_type_id=1).annotate(total=Sum('amount')).group_by('user_id').first().values('total')
 
     total_expenses = float(expenses[0]['total']) if expenses and expenses[0]['total'] else 0.0  # 🔹 Convertir a float
 
@@ -140,4 +140,29 @@ async def get_monthly_balance(user: User):
         "total_earnings": total_earnings,
         "total_expenses": total_expenses,
         "balance": balance
+    }
+
+
+async def get_month_income(month: int, year: int, user: User):
+    """
+    Calcula el total de ingresos de un mes.
+    """
+
+    try:
+        start_date = datetime(year, month, 1)
+        end_date = datetime(year, month + 1, 1) if month < 12 else datetime(year + 1, 1, 1)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Fecha inválida")
+
+    earnings = await Transaction.filter(
+        user_id=user.id,
+        date__gte=start_date,
+        date__lt=end_date,
+        category__category_type_id=1
+    ).annotate(total=Sum('amount')).group_by('user_id').first().values('total')
+
+    total_earnings = earnings['total'] if earnings and earnings['total'] else 0
+
+    return {
+        "total_earnings": total_earnings
     }

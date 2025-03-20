@@ -3,7 +3,7 @@ from ..auth.dependencies import get_current_user
 from typing import Optional
 
 from ..schemas.transaction import TransactionRequest, TransactionPydantic
-from ..services.transaction import get_monthly_balance, get_transactions, create_transaction, get_total_spent
+from ..services.transaction import get_month_income, get_monthly_balance, get_transactions, create_transaction, get_total_spent
 from ..models.user import User
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
