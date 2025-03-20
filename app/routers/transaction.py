@@ -19,7 +19,7 @@ async def list_transactions(
     return await get_transactions(start_date=startDate, end_date=endDate, category=category, user=user)
 
 @router.post("", response_model=TransactionPydantic)
-async def add_transaction(transaction: TransactionRequest, user: User = Depends(get_current_user)):
+async def tadd_transaction(transaction: TransactionRequest, user: User = Depends(get_current_user)):
     """Create a new transaction."""
     return await create_transaction(transaction=transaction, user=user)
 
@@ -30,7 +30,7 @@ async def total_spent(user: User = Depends(get_current_user)):
     return await get_total_spent(user=user)
 
 
-@router.get("/balance/{year}/{month}")
-async def monthly_balance(year: int, month: int, user: User = Depends(get_current_user)):
+@router.get("/balance")
+async def monthly_balance( user: User = Depends(get_current_user)):
     """Devuelve el balance general de un mes."""
-    return await get_monthly_balance(user=user, year=year, month=month)
+    return await get_monthly_balance(user=user)
