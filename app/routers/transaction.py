@@ -3,7 +3,7 @@ from ..auth.dependencies import get_current_user
 from typing import Optional
 
 from ..schemas.transaction import TransactionRequest, TransactionPydantic
-from ..services.transaction import get_monthly_balance, get_transactions, create_transaction, get_total_spent
+from ..services.transaction import get_month_income, get_monthly_balance, get_transactions, create_transaction, get_total_spent
 from ..models.user import User
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
@@ -34,3 +34,10 @@ async def total_spent(user: User = Depends(get_current_user)):
 async def monthly_balance(year: int, month: int, user: User = Depends(get_current_user)):
     """Devuelve el balance general de un mes."""
     return await get_monthly_balance(user=user, year=year, month=month)
+
+@router.get("/income/{year}/{month}")
+async def get_income(month: int, year: int, user: User = Depends(get_current_user)):
+    """
+    Endpoint para obtener el total de ingresos de un mes.
+    """
+    return await get_month_income(month, year, user)
