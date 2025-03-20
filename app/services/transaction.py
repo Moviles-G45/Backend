@@ -74,13 +74,16 @@ async def create_transaction(transaction: TransactionRequest, user: User):
 
 
 async def get_total_spent(user: User):
-    result = await Transaction.filter(user_id=user.id) \
-                              .exclude(category__category_type_id=1) \
-                              .annotate(total=Sum('amount')) \
-                              .values('total')
-    total_spent = result[0]['total'] if result and result[0]['total'] else 0
+    total_spent = await Transaction.filter(user_id=user.id) \
+                                   .exclude(category__category_type_id=1) \
+                                   .annotate(total=Sum('amount')) \
+                                   .group_by('user_id') \
+                                   .first() \
+                                   .values('total')
 
-    return { "user": user.email, "total_spent": total_spent }
+    total = total_spent['total'] if total_spent and 'total' in total_spent else 0
+
+    return {"user": user.email, "total_spent": total}
 
 
 async def get_monthly_balance(user: User, year: int, month: int):
@@ -102,18 +105,18 @@ async def get_monthly_balance(user: User, year: int, month: int):
         date__gte=start_date,
         date__lt=end_date,
         category__category_type_id=1
-    ).annotate(total=Sum('amount')).values('total')
+    ).annotate(total=Sum('amount')).group_by('user_id').first().values('total')
 
-    total_earnings = earnings[0]['total'] if earnings and earnings[0]['total'] else 0
+    total_earnings = earnings['total'] if earnings and earnings['total'] else 0
 
     # Sumar los gastos (expenses)
     expenses = await Transaction.filter(
         user_id=user.id,
         date__gte=start_date,
         date__lt=end_date
-    ).exclude(category__category_type_id=1).annotate(total=Sum('amount')).values('total')
+    ).exclude(category__category_type_id=1).annotate(total=Sum('amount')).group_by('user_id').first().values('total')
 
-    total_expenses = expenses[0]['total'] if expenses and expenses[0]['total'] else 0
+    total_expenses = expenses['total'] if expenses and expenses['total'] else 0
 
     # Calcular balance
     balance = total_earnings - total_expenses
