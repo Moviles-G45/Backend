@@ -19,3 +19,7 @@ class UserCreate(BaseModel):
 
 class UserLogin(BaseModel):
     token: str
+
+class UserClassicLogin(BaseModel):
+     email: EmailStr
+     password: str
