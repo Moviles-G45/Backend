@@ -9,8 +9,12 @@ class Settings(BaseSettings):
     APP_NAME: str = "BUDGETBUDDY-API"
     APP_VERSION: str = "1.0.0"
 
-    # 👉 Esta URL reemplaza host, port, user, password, etc.
-    DATABASE_URL: str = "postgres://postgres:postgres@/budgetbuddy-db?host=/cloudsql/budgetbuddy-454316:us-central1:budgetbuddy-db"
+    DATABASE_TYPE: str = "postgres"
+    DATABASE_USER: str = "postgres"
+    DATABASE_PASSWORD: str = "sample"
+    DATABASE_HOST: str = "localhost"
+    DATABASE_NAME: str = "database"
+    DATABASE_PORT: int = 5432
 
     GOOGLE_MAPS_API_KEY: str = ""
 
@@ -30,7 +34,16 @@ try:
 
     TORTOISE_ORM = {
         "connections": {
-            "default": env.DATABASE_URL
+            "default": {
+                "engine": f"tortoise.backends.asyncpg",
+                "credentials": {
+                    "host": env.DATABASE_HOST,
+                    "port": env.DATABASE_PORT,
+                    "user": env.DATABASE_USER,
+                    "password": env.DATABASE_PASSWORD,
+                    "database": env.DATABASE_NAME,
+                },
+            }
         },
         "apps": {
             "models": {
