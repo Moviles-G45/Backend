@@ -1,24 +1,19 @@
-# Usa una imagen base ligera de Python
 FROM python:3.10-slim
 
-# Configurar el directorio de trabajo
 WORKDIR /app
 
-# Copiar el archivo de dependencias
+# Copiar el binario del proxy al contenedor
+COPY cloudsql-proxy/cloud-sql-proxy /cloud-sql-proxy
+RUN chmod +x /cloud-sql-proxy
+
+# Instalar dependencias
 COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Instalar dependencias en un entorno virtual dentro del contenedor
-RUN python -m venv /app/.venv
-RUN /app/.venv/bin/pip install --no-cache-dir -r requirements.txt
-
-# Copiar el código fuente
+# Copiar todo el código
 COPY . .
 
-# Definir variables de entorno para usar el entorno virtual
-ENV PATH="/app/.venv/bin:$PATH"
+EXPOSE 8080
 
-# Exponer el puerto de FastAPI
-EXPOSE 8000
-
-# Comando para ejecutar la aplicación
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Iniciar proxy y luego app
+CMD ["/bin/bash", "-c", "/cloud-sql-proxy budgetbuddy-454316:us-central1:budgetbuddy-db --port 5432 & uvicorn app.main:app --host 0.0.0.0 --port 8080"]

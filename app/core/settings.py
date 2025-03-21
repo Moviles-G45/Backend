@@ -9,26 +9,20 @@ class Settings(BaseSettings):
     APP_NAME: str = "BUDGETBUDDY-API"
     APP_VERSION: str = "1.0.0"
 
-    DATABASE_TYPE: str = "postgres"
-    DATABASE_USER: str = "postgres"
-    DATABASE_PASSWORD: str = "sample"
-    DATABASE_HOST: str = "localhost"
-    DATABASE_NAME: str = "database"
-    DATABASE_PORT: int = 5432
-
-    # ACCESS_TOKEN_SECRET_KEY: str = "sample"
-    # ACCESS_TOKEN_ALGORITHM: str = "HS256"
-    # ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    # 👉 Esta URL reemplaza host, port, user, password, etc.
+    DATABASE_URL: str = "postgres://postgres:postgres@/budgetbuddy-db?host=/cloudsql/budgetbuddy-454316:us-central1:budgetbuddy-db"
 
     GOOGLE_MAPS_API_KEY: str = ""
 
     SMTP_SERVER: str = "smtp.gmail.com"
     SMTP_PORT: int = 587
-    SMTP_EMAIL: str = "tucorreo@gmail.com"  
-    SMTP_PASSWORD: str = "tupassword" 
+    SMTP_EMAIL: str = "tucorreo@gmail.com"
+    SMTP_PASSWORD: str = "tupassword"
 
     model_config = SettingsConfigDict(case_sensitive=True, env_file=ENV_PATH)
 
+
+# Variable global para usar en otras partes
 env = None
 
 try:
@@ -36,25 +30,17 @@ try:
 
     TORTOISE_ORM = {
         "connections": {
-            "default": {
-                "engine": f"tortoise.backends.asyncpg",
-                "credentials": {
-                    "host": env.DATABASE_HOST,
-                    "port": env.DATABASE_PORT,
-                    "user": env.DATABASE_USER,
-                    "password": env.DATABASE_PASSWORD,
-                    "database": env.DATABASE_NAME,
-                },
-            }
+            "default": env.DATABASE_URL
         },
         "apps": {
             "models": {
                 "models": ["app.models"],
                 "default_connection": "default",
-            },
-        },
+            }
+        }
     }
 
     Tortoise.init_models(["app.models"], "models")
+
 except ValidationError as e:
-    print("A validation error has ocurred in config file {ENV_PATH}: {e}")
+    print(f"A validation error has occurred in config file {ENV_PATH}: {e}")
