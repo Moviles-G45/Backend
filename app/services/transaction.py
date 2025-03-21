@@ -74,16 +74,28 @@ async def create_transaction(transaction: TransactionRequest, user: User):
 
 
 async def get_total_spent(user: User):
-    total_spent = await Transaction.filter(user_id=user.id) \
-                                   .exclude(category__category_type_id=1) \
-                                   .annotate(total=Sum('amount')) \
-                                   .group_by('user_id') \
-                                   .first() \
-                                   .values('total')
+    """
+    Calcula el total de gastos del usuario en el mes actual.
+    """
+    today = datetime.today()
+    year, month = today.year, today.month
 
-    total = total_spent['total'] if total_spent and 'total' in total_spent else 0
+    start_date = datetime(year, month, 1)
+    end_date = datetime(year, month + 1, 1) if month < 12 else datetime(year + 1, 1, 1)
 
-    return {"user": user.email, "total_spent": total}
+    result = await Transaction.filter(
+        user_id=user.id,
+        date__gte=start_date,
+        date__lt=end_date
+    ).annotate(total=Sum('amount')).values('total')
+
+    total_spent = float(result[0]['total']) if result and result[0]['total'] else 0.0  # 🔹 Convertir a float
+
+    return {
+        "year": year,
+        "month": month,
+        "total_spent": total_spent
+    }
 
 
 async def get_monthly_balance(user: User, year: int, month: int):
@@ -138,29 +150,4 @@ async def get_monthly_balance(user: User, year: int, month: int):
         "needs_spent": total_needs,
         "wants_spent": total_wants,
         "savings_spent": total_savings
-    }
-
-
-async def get_month_income(month: int, year: int, user: User):
-    """
-    Calcula el total de ingresos de un mes.
-    """
-
-    try:
-        start_date = datetime(year, month, 1)
-        end_date = datetime(year, month + 1, 1) if month < 12 else datetime(year + 1, 1, 1)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Fecha inválida")
-
-    earnings = await Transaction.filter(
-        user_id=user.id,
-        date__gte=start_date,
-        date__lt=end_date,
-        category__category_type_id=1
-    ).annotate(total=Sum('amount')).group_by('user_id').first().values('total')
-
-    total_earnings = earnings['total'] if earnings and earnings['total'] else 0
-
-    return {
-        "total_earnings": total_earnings
     }
