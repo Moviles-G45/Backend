@@ -130,11 +130,11 @@ async def get_monthly_balance(user: User, year: int, month: int):
         if cat_type == 1:
             total_earnings += amount
         elif cat_type == 2:
-            total_needs += amount
+            total_savings += amount
         elif cat_type == 3:
             total_wants += amount
         elif cat_type == 4:
-            total_savings += amount
+            total_needs += amount
 
     total_expenses = total_needs + total_wants + total_savings
 
