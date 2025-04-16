@@ -32,54 +32,48 @@ async def get_budget(user_id: int, month: int, year: int):
     return result
 
 
-async def set_budget(user: User, budget_create: BudgetCreate) -> dict | None:
+async def set_budget(user: User, budget_create: BudgetCreate) -> dict:
     """
     Crea un presupuesto para el usuario dado en el mes y año especificados.
-
-    Parámetros:
-      - user: objeto User.
-      - budget_create: objeto BudgetCreate, que contiene:
-            - month: mes del presupuesto.
-            - year: año del presupuesto.
-            - budget_category_types: lista de asignaciones, cada una con:
-                  { "category_type": <id del CategoryType>, "percentage": <porcentaje asignado> }
-        La suma de todos los porcentajes debe ser 100 y no se permite incluir el CategoryType con id 1 (earnings).
-
-    Retorna un diccionario con la información del presupuesto creado y las categorías,
-    o None en caso de error (por ejemplo, si la suma de porcentajes no es 100, ya existe
-    un presupuesto para ese mes/año, o se incluye el CategoryType de earnings, o no se encuentra algún CategoryType).
     """
+
     # Validar que la suma de porcentajes sea 100
     total_percentage = sum(item.percentage for item in budget_create.budget_category_types)
     if total_percentage != 100:
-        return None
+        return {
+            "success": False,
+            "error": "La suma de los porcentajes debe ser exactamente 100. Actualmente es: " + str(total_percentage)
+        }
 
     # Verificar que no exista ya un presupuesto para este usuario, mes y año
     existing_budget = await Budget.get_or_none(user_id=user.id, month=budget_create.month, year=budget_create.year)
     if existing_budget:
-        return None
+        return {
+            "success": False,
+            "error": f"Ya existe un presupuesto para {user.id}"
+        }
 
-    # Usar una transacción para garantizar la atomicidad
     async with in_transaction():
-        # Crear el presupuesto
         budget = await Budget.create(user_id=user.id, month=budget_create.month, year=budget_create.year)
         budget_categories_summary = []
 
-        # Crear la relación BudgetCategoryType para cada categoría
         for item in budget_create.budget_category_types:
             category_type_id = item.category_type
             percentage = item.percentage
 
-            # Verificar que el CategoryType exista
             category_type = await CategoryType.get_or_none(id=category_type_id)
             if not category_type:
-                return None
+                return {
+                    "success": False,
+                    "error": f"CategoryType con id {category_type_id} no encontrado"
+                }
 
-            # Verificar que no se esté intentando asignar el CategoryType de earnings (id == 1)
             if category_type.id == 1:
-                return None
+                return {
+                    "success": False,
+                    "error": "No se permite incluir el CategoryType 'earnings' (id=1)"
+                }
 
-            # Crear la relación entre el presupuesto y el CategoryType
             await BudgetCategoryType.create(
                 budget=budget,
                 category_type=category_type,
@@ -91,8 +85,8 @@ async def set_budget(user: User, budget_create: BudgetCreate) -> dict | None:
                 "percentage": percentage
             })
 
-    # Retornar un resumen del presupuesto creado
     return {
+        "success": True,
         "budget_id": budget.id,
         "month": budget.month,
         "year": budget.year,

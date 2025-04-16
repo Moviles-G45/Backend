@@ -26,8 +26,10 @@ async def create_budget_endpoint(
 ):
     budget = BudgetCreate(**budget.model_dump(), user_id=current_user.id)
     result = await set_budget(current_user, budget)
-    if result is None:
-        raise HTTPException(status_code=400, detail="Error al crear el presupuesto")
+
+    if not result.get("success", False):
+        raise HTTPException(status_code=400, detail=result.get("error", "Error desconocido al crear el presupuesto"))
+
     return result
 
 

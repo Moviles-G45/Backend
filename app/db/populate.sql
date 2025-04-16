@@ -84,6 +84,8 @@ INSERT INTO notification (id, name, content, date, user_id) VALUES
 (18, 'Alerta', 'Actividad inusual en tu cuenta', '2025-03-22 09:00:00', 18),
 (19, 'Recordatorio', 'Revisión trimestral de gastos', '2025-03-23 10:00:00', 19),
 (20, 'Aviso', 'Nuevo aviso de actualización', '2025-03-24 11:00:00', 20);
+
+
 --Para el home
 
 INSERT INTO "user" (full_name, email, date_of_birth, phone_number) VALUES
@@ -124,13 +126,20 @@ INSERT INTO "budget" (month, year, user_id) VALUES
 (1, 2025, 4);
 
 INSERT INTO "budgetcategorytype" (percentage, category_type_id, budget_id) VALUES
-(20, 2, 1),  -- 20% para ahorros
-(25, 3, 1),  -- 40% para necesidades
-(5, 4, 1),   -- 20$ para deseos
+(20, 2, 11),  -- 20% para ahorros
+(25, 3, 11),  -- 40% para necesidades
+(5, 4, 11),   -- 20$ para deseos
 
-(15, 2, 2),  -- 10% para ahorros
-(20, 3, 2),  -- 50% para necesidades
-(5, 4, 2);   -- 40% para deseos
+INSERT INTO "budgetcategorytype" (percentage, category_type_id, budget_id) VALUES
+(20, 2, 11),  -- 20% para ahorros
+(25, 3, 11),  -- 40% para necesidades
+(5, 4, 11),   -- 20$ para deseos
+
+
+INSERT INTO "budgetcategorytype" (percentage, category_type_id, budget_id) VALUES
+(10, 1, 7),  -- 10% para ahorros
+(50, 3, 7),  -- 50% para necesidades
+(40, 4, 7);   -- 40% para deseos
 
 (20, 2, 1),  -- 20% para ahorros
 (25, 3, 1),  -- 40% para necesidades
