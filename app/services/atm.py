@@ -46,13 +46,16 @@ async def get_nearby_atms(lat: float, lon: float, radius: float):
      3. Filtering ATMs by distance and returning the 10 closest.
     """
     city, state = await get_city_state(lat, lon)
+    print('Bogotá' in state)
 
     url = "https://www.servibanca.com.co/ws/oficinas"
     params = {
         "info": "puntos",
-        "departamento": state.upper() if state != 'Bogotá' else "CUNDINAMARCA",
-        "ciudad": city.upper(),
+        "departamento": state.upper() if 'Bogotá' not in state else "CUNDINAMARCA",
+        "ciudad": city.upper() if 'Bogotá' not in city else "BOGOTÁ",
     }
+
+    print(params)
     async with httpx.AsyncClient() as client:
         response = await client.get(url, params=params)
         response.raise_for_status()
