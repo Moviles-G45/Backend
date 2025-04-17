@@ -1,11 +1,13 @@
 import os
-from fastapi import APIRouter,HTTPException
+from fastapi import APIRouter, Depends,HTTPException
 import httpx
 from pydantic import BaseModel
 import smtplib
 from email.mime.text import MIMEText
 
+from app.auth.dependencies import get_current_user
 from app.helpers.mail import send_email
+from app.models.user import User
 
 from ..schemas.notification import NotificationPydantic, NotificationCreate
 from ..services.notification import get_notifications, create_notification
@@ -18,15 +20,20 @@ async def list_notifications():
     return await get_notifications()
 
 @router.post("", response_model=NotificationPydantic)
-async def add_notification(notification: NotificationCreate):
-    """Create a new notification (manual or system-driven)."""
-    return await create_notification(notification)
+async def add_notification(
+    notification: NotificationCreate,
+    current_user: User = Depends(get_current_user)
+):
+    notification_data = notification.model_dump(exclude_unset=True)
+    notification_data["user_id"] = current_user.id
+    return await create_notification(notification_data)
 
-
+    
 class EmailRequest(BaseModel):
     to: str
     subject: str
     message: str
+    
 
 @router.post("/send-email")
 async def send_reminder_email(payload: EmailRequest):

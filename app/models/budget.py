@@ -1,6 +1,7 @@
 from tortoise.models import Model
 from tortoise import fields
 
+
 class Budget(Model):
     id = fields.IntField(pk=True)
     month = fields.IntField()
