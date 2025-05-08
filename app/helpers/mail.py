@@ -33,6 +33,7 @@ def send_email(
 
         with smtplib.SMTP(env.SMTP_SERVER, env.SMTP_PORT) as server:
             server.starttls()
+            print(f"SMTP_EMAIL={env.SMTP_EMAIL}, SMTP_PASSWORD startswith? {env.SMTP_PASSWORD[:4]}…")
             server.login(env.SMTP_EMAIL, env.SMTP_PASSWORD)
             server.sendmail(env.SMTP_EMAIL, to_email, msg.as_string())
 
