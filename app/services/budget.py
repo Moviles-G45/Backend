@@ -94,6 +94,82 @@ async def set_budget(user: User, budget_create: BudgetCreate) -> dict:
     }
 
 
+async def update_budget(user: User, budget_create: BudgetCreate) -> dict:
+    """
+    Edita el presupuesto del mes actual para el usuario dado.
+    """
+
+    # Validar que la suma de porcentajes sea 100
+    total_percentage = sum(item.percentage for item in budget_create.budget_category_types)
+    if total_percentage != 100:
+        return {
+            "success": False,
+            "error": f"La suma de los porcentajes debe ser exactamente 100. Actualmente es: {total_percentage}"
+        }
+
+    # Verificar si ya existe un presupuesto para este usuario, mes y año
+    existing_budget = await Budget.get_or_none(
+        user_id=user.id, 
+        month=budget_create.month, 
+        year=budget_create.year
+    )
+
+    if not existing_budget:
+        return {
+            "success": False,
+            "error": f"No existe un presupuesto para {budget_create.month}/{budget_create.year} del usuario {user.id}"
+        }
+
+    async with in_transaction():
+        try:
+            # Actualizar el presupuesto existente
+            budget_categories_summary = []
+
+            # Eliminar categorías previas del presupuesto
+            await BudgetCategoryType.filter(budget=existing_budget).delete()
+
+            # Crear nuevas categorías en el presupuesto actualizado
+            for item in budget_create.budget_category_types:
+                category_type_id = item.category_type
+                percentage = item.percentage
+
+                category_type = await CategoryType.get_or_none(id=category_type_id)
+                if not category_type:
+                    return {
+                        "success": False,
+                        "error": f"CategoryType con id {category_type_id} no encontrado"
+                    }
+
+                if category_type.id == 1:
+                    return {
+                        "success": False,
+                        "error": "No se permite incluir el CategoryType 'earnings' (id=1)"
+                    }
+
+                await BudgetCategoryType.create(
+                    budget=existing_budget,
+                    category_type=category_type,
+                    percentage=percentage
+                )
+
+                budget_categories_summary.append({
+                    "category": category_type.name,
+                    "percentage": percentage
+                })
+
+            return {
+                "success": True,
+                "message": "Presupuesto actualizado exitosamente",
+                "budget_id": existing_budget.id,
+                "month": existing_budget.month,
+                "year": existing_budget.year,
+                "category_types": budget_categories_summary
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Error al actualizar el presupuesto: {str(e)}"
+            }
 
 async def get_exceedances(user: User, month: int, year: int):
     """
