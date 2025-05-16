@@ -137,7 +137,7 @@ INSERT INTO "budgetcategorytype" (percentage, category_type_id, budget_id) VALUE
 
 
 INSERT INTO "budgetcategorytype" (percentage, category_type_id, budget_id) VALUES
-(10, 1, 7),  -- 10% para ahorros
+(10, 2, 7),  -- 10% para ahorros
 (50, 3, 7),  -- 50% para necesidades
 (40, 4, 7);   -- 40% para deseos
 
